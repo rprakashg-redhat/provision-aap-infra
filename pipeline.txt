@@ -1,0 +1,110 @@
+resource "aws_codepipeline" "pipeline" {
+    name = local.pipeline_name
+    role_arn = aws_iam_role.pipeline_role.arn
+
+    artifact_store {
+        location = module.installersource.s3_bucket_id
+        type = "S3"
+    }
+
+    stage {
+      name = "Source"
+      action {
+        name      = "Source"
+        category  = "Source"
+        owner     = "AWS"
+        provider  = "S3"
+        version   = 1
+        output_artifacts = ["build_output"]
+      }
+    }
+
+    stage {
+      name = "Deploy"
+
+      action {
+        name = "Deploy"
+        category = "Deploy"
+        owner = "AWS"
+        provider = "CodeDeploy"
+        input_artifacts = ["build_output"]
+        version = 1
+        configuration = {
+          ApplicationName = aws_codedeploy_app.deployer.name
+          DeploymentGroupName = aws_codedeploy_deployment_group.deployer_group.deployment_group_name
+        }
+      }      
+    }
+}
+
+#CodeDeploy app
+resource "aws_codedeploy_app" "deployer" {
+  name = "deployer"
+}
+
+#CodeDeploy Deployment Group
+resource "aws_codedeploy_deployment_group" "deployer_group" {
+  app_name                = aws_codedeploy_app.deployer
+  deployment_group_name   = "deployergroup"
+  service_role_arn        =  aws_iam_role.pipeline_role.arn
+  deployment_config_name  = "CodeDeployDefault.OneAtATime"
+  
+  ec2_tag_set {
+    ec2_tag_filter {
+      key   = "Name"
+      value = "bastion"
+      type  = "KEY_AND_VALUE"
+    }
+  }
+}
+
+# IAM role for CodePipeline
+resource "aws_iam_role" "pipeline_role" {
+  name = "CodePipelineRole"
+
+  assume_role_policy = <<EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Action": "sts:AssumeRole",
+          "Principal": {
+            "Service": "codepipeline.amazonaws.com"
+          },
+          "Effect": "Allow",
+          "Sid": ""
+        }
+      ]
+    }
+  EOF
+}
+
+resource "aws_iam_role_policy" "codepipeline_policy" {
+  name = "CodePipelinePolicy"
+  role = aws_iam_role.codepipeline_role.id
+
+  policy = <<EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:ListBucket"
+          ],
+          "Resource": [
+            "arn:aws:s3:::${module.installersource.s3_bucket_id}",
+            "arn:aws:s3:::${module.installersource.s3_bucket_id}/*"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": "sts:AssumeRole",
+          "Resource": "*"
+        }
+      ]
+    }
+  EOF
+}

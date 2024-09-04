@@ -1,0 +1,80 @@
+module "installersource" {
+    source  = "terraform-aws-modules/s3-bucket/aws"
+    version = "4.1.2"
+
+    bucket                      = local.install_source_bucket
+    force_destroy               = false
+
+    attach_policy                             = true
+    policy                                    = data.aws_iam_policy_document.bucket_policy.json
+    attach_deny_insecure_transport_policy     = true
+    attach_require_latest_tls_policy          = true
+
+    control_object_ownership    = true
+    object_ownership            = "BucketOwnerPreferred"
+
+    acl                         = "private"
+
+    versioning = {
+        status = true
+    }
+}
+
+resource "aws_iam_role" "this" {
+  assume_role_policy = <<EOF
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Action": "sts:AssumeRole",
+                "Principal": {
+                    "Service": "ec2.amazonaws.com"
+                },
+                "Effect": "Allow",
+                "Sid": ""
+            }
+        ]
+    }
+    EOF
+}
+
+data "aws_iam_policy_document" "bucket_policy" {
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.this.arn]
+    }
+
+    actions = [
+      "s3:ListBucket",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${local.install_source_bucket}",
+    ]
+  }
+}
+
+data "template_file" "inventorytemplate" {
+  template = file("${path.module}/templates/inventory.tftpl")
+
+  vars = {
+    host = module.aap.private_dns[0]
+  }
+}
+
+resource "local_file" "inventory" {
+  filename = "${path.module}/files/inventory"
+  content = data.template_file.inventorytemplate.rendered
+}
+
+resource "aws_s3_object" "files" {
+    for_each = fileset("${path.module}/files", "**")
+
+    key = "files/${each.value}"
+    bucket        = module.installersource.s3_bucket_id
+    source        = "${path.module}/files/${each.value}"
+    etag          =  filemd5("${path.module}/files/${each.value}")
+
+    depends_on = [local_file.inventory]
+}
