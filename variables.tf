@@ -13,7 +13,7 @@ variable "stack" {
 variable instanceName {
   description = "EC2 instance name"
   type        = string
-  default     = "aap-controller-node"
+  default     = "aap-node"
 }
 
 variable "instanceType" {
@@ -43,11 +43,11 @@ variable "ami" {
 variable "myip" {
   description = "Public IP assigned by my ISP"
   type        = string
-  default     = "136.27.40.16/32"
+  default     = "136.27.40.26/32"
 }
 
 variable "domain" {
   description   = "value"
   type          = string
-  default       = "imagebuilder.sandbox1066.opentlc.com"
+  default       = "sandbox1734.opentlc.com"
 }

@@ -1,8 +1,8 @@
-module "logstore" {
+module "elblogs" {
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "4.1.2"
+  version = "~> 3.0"
 
-  bucket_prefix = "${local.elb_name}-logs-"
+  bucket_prefix = "${var.stack}-elb-logs"
   acl           = "log-delivery-write"
 
   # For example only

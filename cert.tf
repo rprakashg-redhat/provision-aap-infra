@@ -19,7 +19,7 @@ resource "acme_registration" "registration" {
 resource "acme_certificate" "acme" {
     account_key_pem           = acme_registration.registration.account_key_pem
     common_name               = data.aws_route53_zone.base_domain.name
-    subject_alternative_names = ["*.${data.aws_route53_zone.base_domain.name}"]
+    subject_alternative_names = ["automation.${data.aws_route53_zone.base_domain.name}"]
 
     dns_challenge {
         provider = "route53"
@@ -35,4 +35,14 @@ resource "aws_acm_certificate" "cert" {
     certificate_body = acme_certificate.acme.certificate_pem 
     private_key = acme_certificate.acme.private_key_pem
     certificate_chain = acme_certificate.acme.issuer_pem
+}
+
+resource local_file "cert_file" {
+  filename = "${path.module}/certs/aapcert.pem"
+  content = "${acme_certificate.acme.certificate_pem}\n${acme_certificate.acme.issuer_pem}"
+}
+
+resource "local_file" "cert_key_file" {
+  filename = "${path.module}/certs/aapcert_private_key.pem"
+  content = acme_certificate.acme.private_key_pem
 }

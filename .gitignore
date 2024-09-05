@@ -33,3 +33,5 @@ terraform.rc
 **/.DS_Store
 
 **/files/*
+
+certs

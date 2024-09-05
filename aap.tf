@@ -30,5 +30,12 @@ module "aap" {
     }
   ]
 
+  user_data = <<-EOF
+    #!/bin/bash
+    sudo yum -y update
+    sudo dnf -y install ansible-core
+    
+  EOF
+  
   tags = local.tags
 }

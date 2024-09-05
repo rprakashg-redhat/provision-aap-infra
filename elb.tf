@@ -2,9 +2,7 @@ module "elb" {
     source  = "terraform-aws-modules/elb/aws"
     version = "4.0.2"
 
-    count                 = 1      
-    name                  = local.elb_name
-    internal              = false
+    name                  = "${var.stack}-elb"
     subnets               = module.vpc.public_subnets
     security_groups       = [module.public_subnet_sg.security_group_id]
 
@@ -19,7 +17,7 @@ module "elb" {
     ]
 
     health_check = {
-        target              = "HTTP:80/"
+        target              = "TCP:80"
         interval            = 30
         healthy_threshold   = 2
         unhealthy_threshold = 2
@@ -27,8 +25,8 @@ module "elb" {
     }
 
     access_logs = {
-        bucket      = module.logstore.s3_bucket_id
-        interval    = 60
+        bucket = module.elblogs.s3_bucket_id
+        interval = 60
     }
 
     number_of_instances = 1
@@ -36,6 +34,5 @@ module "elb" {
 
     #Tag you are it
     tags                  = local.tags
-
 }
 
