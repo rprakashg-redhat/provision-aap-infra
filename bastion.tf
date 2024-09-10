@@ -6,9 +6,9 @@ module "bastion" {
   instance_count                = 1
 
   instance_type                 = "t2.medium"
-  ami                           = var.ami
+  ami                           = var.config.ami
   subnet_id                     = tolist(module.vpc.public_subnets)[0]
-  key_name                      = var.sshKey
+  key_name                      = var.config.ssh_key
   vpc_security_group_ids        = [module.public_subnet_sg.security_group_id]
   associate_public_ip_address   = true
   ipv6_addresses = null

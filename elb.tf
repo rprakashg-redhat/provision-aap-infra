@@ -2,7 +2,7 @@ module "elb" {
     source  = "terraform-aws-modules/elb/aws"
     version = "4.0.2"
 
-    name                  = "${var.stack}-elb"
+    name                  = "${var.config.name}-elb"
     subnets               = module.vpc.public_subnets
     security_groups       = [module.public_subnet_sg.security_group_id]
 
@@ -29,10 +29,14 @@ module "elb" {
         interval = 60
     }
 
-    number_of_instances = 1
-    instances           = module.aap.id
+    number_of_instances     = var.config.controller.count
+    create_elb              = true 
+    instances               = flatten([
+                                for k, v in module.automationcontroller: [
+                                    for i in v.id: i
+                                ] 
+                            ])
 
     #Tag you are it
     tags                  = local.tags
 }
-

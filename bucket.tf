@@ -2,7 +2,7 @@ module "elblogs" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "~> 3.0"
 
-  bucket_prefix = "${var.stack}-elb-logs"
+  bucket_prefix = "${var.config.name}-elb-logs"
   acl           = "log-delivery-write"
 
   # For example only

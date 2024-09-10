@@ -1,53 +1,72 @@
-variable "region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-west-2"
-}
+variable config {
+  description = "Ansible automation platform deployment config"
+  type = object({
+    name        = string
+    region      = string
+    azs         = list(string)
+    ami         = string
+    base_domain = string
+    ssh_key     = string
+    my_ip       = string
 
-variable "stack" {
-  description = "Name of Stack"
-  type        = string
-  default     = "edge-management"
-}
+    controller  = object({
+      instance_type = string
+      count         = number
+    })
+    hub         = object({
+      instance_type = string
+      count         = number
+    })
+    eda         = object({
+      instance_type = string
+      count         = number
+    })
+    execution     = object({
+      instance_type = string
+      count         = number
+    })
+    db              = list(object({
+      instance_name = string
+      db_name       = string
+      db_user          = string
+    }))
+  })
+  default = {
+    name = "edge-management"
+    region = "us-west-2"
+    azs    = ["us-west-2a", "us-west-2b"]
+    ami = "ami-0f7197c592205b389"
+    base_domain = "sandbox1734.opentlc.com"
+    ssh_key = "ec2"
+    my_ip   = "136.27.40.26/32"
 
-variable instanceName {
-  description = "EC2 instance name"
-  type        = string
-  default     = "aap-node"
-}
-
-variable "instanceType" {
-  description = "EC2 instance type to use"  
-  type = string
-  default = "m5.xlarge"
-}
-
-variable "dbUser" {
-  description = "value"
-  type        = string
-  default     = "aapuser"   
-}
-
-variable sshKey {
-  description = "SSH key pair name"
-  type        = string
-  default     = "ec2"
-}
-
-variable "ami" {
-  description = "AMI to use"
-  type = string
-  default = "ami-0f7197c592205b389"
-}
-
-variable "myip" {
-  description = "Public IP assigned by my ISP"
-  type        = string
-  default     = "136.27.40.26/32"
-}
-
-variable "domain" {
-  description   = "value"
-  type          = string
-  default       = "sandbox1734.opentlc.com"
+    controller = {
+      count = 1
+      instance_type = "m5.xlarge"
+    }
+    hub = {
+      count = 1
+      instance_type = "m5.large"
+    }
+    eda = {
+      count = 1
+      instance_type = "m5.xlarge"
+    }
+    execution = {
+      count = 1
+      instance_type = "m5.xlarge"
+    }
+    db = [
+      {
+        instance_name = "automationcontroller"
+        db_name       = "automationcontrollerdb"
+        db_user       = "aapadmin"
+      },
+      {
+        instance_name = "automationhub"
+        db_name       = "automationhubdb"
+        db_user       = "hubadmin"
+      },
+    ]
+  }
 }

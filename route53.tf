@@ -1,7 +1,7 @@
 # Create an A record in the specified hosted zone
 resource "aws_route53_record" "elbrecord" {
   zone_id = data.aws_route53_zone.base_domain.id
-  name    = "automation.${var.domain}"
+  name    = "automation.${var.config.base_domain}"
   type    = "A"
   
   # Use alias to point to the ELB

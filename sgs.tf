@@ -2,7 +2,7 @@ module "public_subnet_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
-  name              = "${var.stack}-vpc-public-subnet-sg"
+  name              = "${var.config.name}-vpc-public-subnet-sg"
   description       = "Security group to allow HTTP/HTTPS, SSH access"
   vpc_id            = module.vpc.vpc_id
 
@@ -13,7 +13,7 @@ module "public_subnet_sg" {
       to_port   = 22
       protocol  = "tcp"
       description = "SSH Traffic from this machine"
-      cidr_blocks = var.myip
+      cidr_blocks = var.config.my_ip
     },
     {
       from_port             = 443
@@ -40,7 +40,7 @@ module "private_subnet_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
-  name              = "${var.stack}-vpc-private-subnet-sg"
+  name              = "${var.config.name}-vpc-private-subnet-sg"
   description       = "Security group to allow HTTP/HTTPS, SSH access from only public subnet"
   vpc_id            = module.vpc.vpc_id
   
@@ -79,7 +79,7 @@ module "db_subnet_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
-  name              = "${var.stack}-vpc-db-subnet-sg"
+  name              = "${var.config.name}-vpc-db-subnet-sg"
   description       = "Security group to allow connections from private subnet"
   vpc_id            = module.vpc.vpc_id
 

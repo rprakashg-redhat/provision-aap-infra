@@ -4,7 +4,7 @@ provider "acme" {
 }
 
 data "aws_route53_zone" "base_domain" {
-  name = var.domain
+  name = var.config.base_domain
 }
 
 resource "tls_private_key" "private_key" {

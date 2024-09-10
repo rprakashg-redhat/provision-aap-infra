@@ -1,25 +1,22 @@
 provider "aws" {
-    region = var.region
+    region = var.config.region
 }
 
-data "aws_availability_zones" "available" {}
 data "aws_caller_identity" "current" {}
 
 resource "aws_key_pair" "sshkeypair" {
-  key_name   = var.sshKey
-  public_key = file("~/.ssh/${var.sshKey}.pub")
+  key_name   = var.config.ssh_key
+  public_key = file("~/.ssh/${var.config.ssh_key}.pub")
 }
 
 locals {
-    azs                     = slice(data.aws_availability_zones.available.names, 0, 3)
     vpc_cidr                = "10.0.0.0/16" 
-    aap_dbnamne             = "aapdb"
-        
+    aap_dbname              = "aapdb"
+
     tags = {
         owner: "Ram Gopinathan"
         email: "ram.gopinathan@redhat.com"
-        website: "https://rprakashg.github.io"
 
-        stack: var.stack
+        stack: var.config.name
     }
 }
